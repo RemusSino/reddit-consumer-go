@@ -1,7 +1,9 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,6 +13,15 @@ import (
 
 var wg sync.WaitGroup
 var lastSubmissionIdMap map[string]string = make(map[string]string)
+
+func readSubreddits() []string {
+	data, err := ioutil.ReadFile("subreddits")
+	if err != nil {
+		log.Panic("Can't read subreddits from file")
+	}
+	subreddits := strings.Split(string(data), ",")
+	return subreddits
+}
 
 func retrieveAndSaveSubmission(subreddit string) {
 	log.Println("Retrieving submissions for subreddit", subreddit)
@@ -30,7 +41,8 @@ func retrieveAndSaveSubmission(subreddit string) {
 }
 
 func main() {
-	subreddits := []string{"Python", "Java"}
+	subreddits := readSubreddits()
+	log.Println("Will query the Reddit API for the following subreddits", subreddits)
 
 	for {
 		log.Println("Start retrieving data at ", time.Now())
@@ -40,7 +52,7 @@ func main() {
 		}
 		log.Println("Waiting for WG")
 		wg.Wait()
-		log.Println("Sleeping 10 sec before next http call")
-		time.Sleep(10 * time.Second)
+		log.Println("Sleeping 1 min before next http call")
+		time.Sleep(1 * time.Minute)
 	}
 }
